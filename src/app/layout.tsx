@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import theme from '@/theme';
 import ModeSwitch from '@/components/ModeSwitch';
+import './globals.css';
 
 interface RootLayoutProps {
     children: React.ReactNode;

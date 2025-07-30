@@ -1,0 +1,30 @@
+/* Define CSS layers for proper MUI integration */
+@layer theme, base, mui, components, utilities;
+
+/* MUI CSS Variables Integration */
+:root {
+}
+
+:root,
+.light {
+    -webkit-print-color-scheme: light;
+    color-scheme: light;
+}
+
+.dark {
+    -webkit-print-color-scheme: dark;
+    color-scheme: dark;
+}
+
+/* Custom utility classes using MUI variables */
+@layer utilities {
+    .bg-primary-mui {
+        background-color: var(--mui-palette-primary-main);
+        color: var(--mui-palette-primary-contrastText);
+    }
+
+    .bg-tertiary-mui {
+        background-color: var(--mui-palette-tertiary-main);
+        color: var(--mui-palette-tertiary-contrastText);
+    }
+}
