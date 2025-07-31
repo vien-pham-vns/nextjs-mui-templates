@@ -1,8 +1,9 @@
-import { getMeWithToken } from '@/lib/dal';
+import { getDirectusCookie, getMeWithToken } from '@/lib/dal';
 import { redirect } from 'next/navigation';
 
 export default async function LoginPage() {
-    const me = await getMeWithToken();
+    const cookie = await getDirectusCookie();
+    const me = await getMeWithToken(cookie as string);
     if (!me.error || me.user) redirect('/');
 
     return (

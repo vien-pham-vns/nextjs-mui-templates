@@ -14,10 +14,10 @@ import { cookies } from 'next/headers';
  *
  * TODO: improve with decrypt and encrypt session cookie with Jose
  */
-export async function getMeWithToken() {
+export async function getMeWithToken(token: string) {
     try {
         // Fetch the currently authenticated user's details
-        const token = (await cookies()).get(APP_SESSION_TOKEN_NAME)?.value;
+        // const token = (await cookies()).get(APP_SESSION_TOKEN_NAME)?.value;
         if (!token) {
             return {
                 success: false,
@@ -35,6 +35,12 @@ export async function getMeWithToken() {
     }
 }
 
-export async function getDirectusCookie() {
-    return (await cookies()).get(APP_SESSION_TOKEN_NAME)?.value;
+export async function getDirectusCookie(): Promise<string | null> {
+    const cookieData = (await cookies()).get(APP_SESSION_TOKEN_NAME)?.value;
+    if (!cookieData) return null;
+    return new Promise((resolve) =>
+        setTimeout(() => {
+            resolve(cookieData);
+        }, 1000),
+    );
 }
