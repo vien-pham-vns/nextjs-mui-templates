@@ -1,7 +1,9 @@
-import { getMe } from '@/lib/dal';
+import { getMeWithToken } from '@/lib/dal';
+import { redirect } from 'next/navigation';
 
 export default async function Dashboard() {
-    const me = await getMe();
+    const me = await getMeWithToken();
+    if (me.error || !me.user) redirect('/auth/login');
 
     return (
         <main>
@@ -10,7 +12,7 @@ export default async function Dashboard() {
                 <button type="submit">Logout</button>
             </form>
             <h1>Welcome!</h1>
-            <p>Your id: {me.user.id}</p>
+            <p>Your id:</p>
         </main>
     );
 }

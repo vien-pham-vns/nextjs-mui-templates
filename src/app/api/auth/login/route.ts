@@ -1,4 +1,4 @@
-import client from '@/lib/directus';
+import directusClient from '@/lib/directus';
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { APP_SESSION_TOKEN_NAME } from '@/constant';
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        const response = await client.login({ email, password });
+        const response = await directusClient.login({ email, password });
 
         if (response.access_token) {
             (await cookies()).set(APP_SESSION_TOKEN_NAME, response.access_token, {

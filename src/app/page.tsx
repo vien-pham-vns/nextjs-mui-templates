@@ -1,12 +1,9 @@
-import { getMe } from '@/lib/dal';
+import { getDirectusCookie, getMeWithToken } from '@/lib/dal';
 import { redirect } from 'next/navigation';
 
 export default async function Home() {
-    const me = await getMe();
+    const me = await getMeWithToken();
+    if (me.error || !me.user) redirect('/auth/login');
 
-    if (!me.success) {
-        redirect('/login');
-    } else {
-        redirect('/dashboard');
-    }
+    return <>HOME</>;
 }

@@ -1,12 +1,9 @@
-import { getMe } from '@/lib/dal';
+import { getMeWithToken } from '@/lib/dal';
 import { redirect } from 'next/navigation';
 
 export default async function LoginPage() {
-    const me = await getMe();
-
-    if (me.success) {
-        redirect('/dashboard');
-    }
+    const me = await getMeWithToken();
+    if (!me.error || me.user) redirect('/');
 
     return (
         <>
