@@ -11,12 +11,14 @@
         "post-update": "echo \"codesandbox preview only, need an update\" && pnpm update --latest"
     },
     "dependencies": {
+        "@directus/sdk": "^20.0.0",
         "@emotion/cache": "latest",
         "@emotion/react": "latest",
         "@emotion/styled": "latest",
         "@mui/icons-material": "latest",
         "@mui/material": "latest",
         "@mui/material-nextjs": "latest",
+        "jose": "^6.0.12",
         "next": "^15.4.5",
         "react": "^19.1.1",
         "react-dom": "^19.1.1"
