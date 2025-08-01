@@ -1,10 +1,12 @@
 import { getDirectusCookie, getMeWithToken } from '@/lib/dal';
 import { redirect } from 'next/navigation';
+import React from 'react';
 
-export default async function Dashboard() {
+const Dashboard: React.FC = async () => {
     const cookie = await getDirectusCookie();
     const me = await getMeWithToken(cookie as string);
     if (me.error || !me.user) redirect('/auth/login');
+
     return (
         <main>
             Vienda
@@ -12,7 +14,9 @@ export default async function Dashboard() {
                 <button type="submit">Logout</button>
             </form>
             <h1>Welcome!</h1>
-            <p>Your id:</p>
+            <p>Your id: {me.user.id}</p>
         </main>
     );
-}
+};
+
+export default Dashboard;

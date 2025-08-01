@@ -4,6 +4,7 @@ import directusClient from './directus';
 import { readMe } from '@directus/sdk';
 import { APP_SESSION_TOKEN_NAME } from '@/constant';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 /**
  * Always use getMeWithToken() to protect pages and user data.
@@ -17,7 +18,6 @@ import { cookies } from 'next/headers';
 export async function getMeWithToken(token: string) {
     try {
         // Fetch the currently authenticated user's details
-        // const token = (await cookies()).get(APP_SESSION_TOKEN_NAME)?.value;
         if (!token) {
             return {
                 success: false,
@@ -28,9 +28,12 @@ export async function getMeWithToken(token: string) {
 
         directusClient.setToken(token);
         const user = await directusClient.request(readMe());
+
         return { success: true, user };
     } catch (error) {
-        console.log(error);
+        if ((error as any).response && (error as any).response.status === 401) {
+            redirect('/auth/login?token=EXPIRED');
+        }
         throw new Error('Failed to fetch user data');
     }
 }

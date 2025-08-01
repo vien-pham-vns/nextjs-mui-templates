@@ -1,21 +1,21 @@
 import { getDirectusCookie, getMeWithToken } from '@/lib/dal';
 import { redirect } from 'next/navigation';
+import { APP_SESSION_EXPIRED } from '@/constant';
+import React from 'react';
+import { LoginForm } from './_components/LoginForm';
 
-export default async function LoginPage() {
+interface LoginPageProps {
+    searchParams: Promise<{ token?: string }>;
+}
+
+const LoginPage: React.FC<LoginPageProps> = async ({ searchParams }) => {
+    const { token } = await searchParams;
+
     const cookie = await getDirectusCookie();
     const me = await getMeWithToken(cookie as string);
-    if (!me.error || me.user) redirect('/');
+    if (!me.error || me.user) redirect('/dashboard');
 
-    return (
-        <>
-            <h2>Login</h2>
-            <form action="/api/auth/login" method="POST">
-                <label>Email</label>
-                <input type="email" name="email" required />
-                <label>Password</label>
-                <input type="password" name="password" required />
-                <input type="submit" />
-            </form>
-        </>
-    );
-}
+    return <LoginForm isTokenExpired={token === APP_SESSION_EXPIRED} />;
+};
+
+export default LoginPage;

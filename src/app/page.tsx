@@ -1,10 +1,13 @@
 import { getDirectusCookie, getMeWithToken } from '@/lib/dal';
 import { redirect } from 'next/navigation';
+import React from 'react';
 
-export default async function Home() {
+const Home: React.FC = async () => {
     const cookie = await getDirectusCookie();
     const me = await getMeWithToken(cookie as string);
     if (me.error || !me.user) redirect('/auth/login');
 
-    return <>HOME</>;
-}
+    redirect('/dashboard');
+};
+
+export default Home;
