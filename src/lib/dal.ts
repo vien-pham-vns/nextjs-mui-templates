@@ -1,10 +1,9 @@
 import 'server-only';
 
 import directusClient from './directus';
-import { readMe, refresh } from '@directus/sdk';
+import { readMe } from '@directus/sdk';
 import { APP_SESSION_TOKEN_NAME } from '@/constant';
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { verifyToken } from './session';
 import { User } from '@/app/models/user';
 import z from 'zod';
@@ -44,7 +43,7 @@ export async function getUser() {
         }
 
         return user;
-    } catch (error) {
+    } catch {
         // if ((error as any).response && (error as any).response.status === 401) {
         //     // redirect('/auth/login?token=EXPIRED');
         //     const result = await directusClient.request(refresh({ mode: 'cookie' }));
@@ -57,7 +56,7 @@ export async function getUser() {
     }
 }
 
-export async function getDirectusCookie(): Promise<string | null> {
+export async function getSessionCookie(): Promise<string | null> {
     const cookieData = (await cookies()).get(APP_SESSION_TOKEN_NAME)?.value;
     if (!cookieData) return null;
     return new Promise((resolve) =>
@@ -79,7 +78,7 @@ export function validatedAction<S extends z.ZodType<any, any>, T>(schema: S, act
     return async (prevState: ActionState, formData: FormData) => {
         const result = schema.safeParse(Object.fromEntries(formData));
         if (!result.success) {
-            return { error: result.error.errors[0].message };
+            return { error: result.error?.message };
         }
 
         return action(result.data, formData);
@@ -105,7 +104,7 @@ export function validatedActionWithUser<S extends z.ZodType<any, any>, T>(
 
         const result = schema.safeParse(Object.fromEntries(formData));
         if (!result.success) {
-            return { error: result.error.errors[0].message };
+            return { error: result.error.message };
         }
 
         return action(result.data, formData, user);

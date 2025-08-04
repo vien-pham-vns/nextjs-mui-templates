@@ -4,7 +4,7 @@ interface LoginPageProps {
     searchParams: Promise<{ token?: string }>;
 }
 
-const LoginPage: React.FC<LoginPageProps> = async ({ searchParams }) => {
+const LoginPage: React.FC<LoginPageProps> = async () => {
     return <LoginForm mode="signin" />;
 };
 

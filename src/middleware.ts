@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
-    let res = NextResponse.next();
+    const res = NextResponse.next();
 
     if (sessionCookies && request.method === 'GET') {
         try {
@@ -39,6 +39,8 @@ export async function middleware(request: NextRequest) {
             }
         }
     }
+
+    return res;
 }
 
 export const config = {

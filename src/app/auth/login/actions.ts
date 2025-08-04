@@ -14,8 +14,8 @@ const loginSchema = z.object({
     password: z.string().min(8).max(100),
 });
 
-export const login = validatedAction(loginSchema, async (data, formData) => {
-    const { email, password } = data;
+export const login = validatedAction(loginSchema, async (formData) => {
+    const { email, password } = formData;
 
     if (!email || !password) {
         return { error: 'All fields are required', status: 400 };
