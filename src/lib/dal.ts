@@ -1,10 +1,13 @@
 import 'server-only';
 
 import directusClient from './directus';
-import { readMe } from '@directus/sdk';
+import { readMe, refresh } from '@directus/sdk';
 import { APP_SESSION_TOKEN_NAME } from '@/constant';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { verifyToken } from './session';
+import { User } from '@/app/models/user';
+import z from 'zod';
 
 /**
  * Always use getMeWithToken() to protect pages and user data.
@@ -15,25 +18,41 @@ import { redirect } from 'next/navigation';
  *
  * TODO: improve with decrypt and encrypt session cookie with Jose
  */
-export async function getMeWithToken(token: string) {
+type DirectusUser = Record<string, any> & Partial<User>;
+
+export async function getUser() {
+    const sessionCookies = (await cookies()).get(APP_SESSION_TOKEN_NAME);
+
+    if (!sessionCookies || !sessionCookies.value) {
+        return null;
+    }
+
+    const sessionData = await verifyToken(sessionCookies.value);
+    if (!sessionData || !sessionData.user || typeof sessionData.user.id !== 'string') {
+        return null;
+    }
+
+    if (new Date(sessionData.expires) < new Date()) {
+        return null;
+    }
+
     try {
-        // Fetch the currently authenticated user's details
-        if (!token) {
-            return {
-                success: false,
-                error: true,
-                message: 'Failed to get cookie token',
-            };
+        // directusClient.setToken(token);
+        const user: DirectusUser = await directusClient.request(readMe());
+        if (!user?.id) {
+            return null;
         }
 
-        directusClient.setToken(token);
-        const user = await directusClient.request(readMe());
-
-        return { success: true, user };
+        return user;
     } catch (error) {
-        if ((error as any).response && (error as any).response.status === 401) {
-            redirect('/auth/login?token=EXPIRED');
-        }
+        // if ((error as any).response && (error as any).response.status === 401) {
+        //     // redirect('/auth/login?token=EXPIRED');
+        //     const result = await directusClient.request(refresh({ mode: 'cookie' }));
+        //     console.log('result', result);
+        //     if (result.access_token) {
+        //         redirect('/auth/login?token=EXPIRED');
+        //     }
+        // }
         throw new Error('Failed to fetch user data');
     }
 }
@@ -46,4 +65,49 @@ export async function getDirectusCookie(): Promise<string | null> {
             resolve(cookieData);
         }, 1000),
     );
+}
+
+export type ActionState = {
+    error?: string;
+    success?: string;
+    [key: string]: any; // This allows for additional properties
+};
+
+type ValidatedActionFunction<S extends z.ZodType<any, any>, T> = (data: z.infer<S>, formData: FormData) => Promise<T>;
+
+export function validatedAction<S extends z.ZodType<any, any>, T>(schema: S, action: ValidatedActionFunction<S, T>) {
+    return async (prevState: ActionState, formData: FormData) => {
+        const result = schema.safeParse(Object.fromEntries(formData));
+        if (!result.success) {
+            return { error: result.error.errors[0].message };
+        }
+
+        return action(result.data, formData);
+    };
+}
+
+type ValidatedActionWithUserFunction<S extends z.ZodType<any, any>, T> = (
+    data: z.infer<S>,
+    formData: FormData,
+    user: DirectusUser,
+) => Promise<T>;
+
+export function validatedActionWithUser<S extends z.ZodType<any, any>, T>(
+    schema: S,
+    action: ValidatedActionWithUserFunction<S, T>,
+) {
+    return async (prevState: ActionState, formData: FormData) => {
+        const user = await getUser();
+        if (!user) {
+            // redirect('/auth/login');
+            throw new Error('User is not authenticated');
+        }
+
+        const result = schema.safeParse(Object.fromEntries(formData));
+        if (!result.success) {
+            return { error: result.error.errors[0].message };
+        }
+
+        return action(result.data, formData, user);
+    };
 }
