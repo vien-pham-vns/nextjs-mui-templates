@@ -1,6 +1,7 @@
 import { APP_SESSION_TOKEN_NAME } from '@/constant';
-import { signToken, verifyToken } from '@/lib/session';
+// import { signToken, verifyToken } from '@/lib/session';
 import { NextRequest, NextResponse } from 'next/server';
+import { getUser } from './lib/dal';
 
 const protectedRoutes = '/dashboard';
 
@@ -9,7 +10,7 @@ export async function middleware(request: NextRequest) {
     const sessionCookies = request.cookies.get(APP_SESSION_TOKEN_NAME);
     const isProtectedRoute = pathname.startsWith(protectedRoutes);
 
-    if (isProtectedRoute && !sessionCookies) {
+    if (isProtectedRoute && !sessionCookies?.value) {
         return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
@@ -17,21 +18,22 @@ export async function middleware(request: NextRequest) {
 
     if (sessionCookies && request.method === 'GET') {
         try {
-            const parsed = await verifyToken(sessionCookies.value);
-            const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
+            // const parsed = await verifyToken(sessionCookies.value);
+            // const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-            res.cookies.set({
-                name: APP_SESSION_TOKEN_NAME,
-                value: await signToken({
-                    ...parsed,
-                    expires: expiresInOneDay.toISOString(),
-                }),
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                path: '/',
-                expires: expiresInOneDay,
-            });
+            // res.cookies.set({
+            //     name: APP_SESSION_TOKEN_NAME,
+            //     value: await signToken({
+            //         ...parsed,
+            //         expires: expiresInOneDay.toISOString(),
+            //     }),
+            //     httpOnly: true,
+            //     secure: process.env.NODE_ENV === 'production',
+            //     sameSite: 'strict',
+            //     path: '/',
+            //     expires: expiresInOneDay,
+            // });
+            await getUser();
         } catch (error) {
             console.log('Error updating session:', error);
             res.cookies.delete(APP_SESSION_TOKEN_NAME);
