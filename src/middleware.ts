@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const sessionCookies = request.cookies.get(APP_SESSION_TOKEN_NAME);
     const isProtectedRoute = pathname.startsWith(protectedRoutes);
-    console.log(`sessionCookies: ${sessionCookies}, isProtectedRoute ${isProtectedRoute} `);
+
     if (isProtectedRoute && !sessionCookies) {
         return NextResponse.redirect(new URL('/auth/login', request.url));
     }
@@ -27,8 +27,9 @@ export async function middleware(request: NextRequest) {
                     expires: expiresInOneDay.toISOString(),
                 }),
                 httpOnly: true,
-                secure: true,
-                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                path: '/',
                 expires: expiresInOneDay,
             });
         } catch (error) {
@@ -53,6 +54,6 @@ export const config = {
          * - images
          * Feel free to modify this pattern to include more paths.
          */
-        '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 };

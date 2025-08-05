@@ -18,13 +18,7 @@
 
 /* Custom utility classes using MUI variables */
 @layer utilities {
-    .bg-primary-mui {
-        background-color: var(--mui-palette-primary-main);
-        color: var(--mui-palette-primary-contrastText);
-    }
-
-    .bg-tertiary-mui {
-        background-color: var(--mui-palette-tertiary-main);
-        color: var(--mui-palette-tertiary-contrastText);
+    .form-error-text {
+        color: var(--mui-palette-error-main);
     }
 }

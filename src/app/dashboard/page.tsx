@@ -1,15 +1,19 @@
 import React from 'react';
 import { logOut } from '../auth/login/actions';
+import Form from 'next/form';
+import { fetchUser } from './actions';
 
 const Dashboard: React.FC = async () => {
+    const directusUser = await fetchUser();
+
     return (
         <main>
             Vienda
-            <form action={logOut}>
+            <Form action={logOut}>
                 <button type="submit">Logout</button>
-            </form>
+            </Form>
             <h1>Welcome!</h1>
-            {/* <p>Your id: {me.user.id}</p> */}
+            <p>Your id: {directusUser?.id || 'No user found'}</p>
         </main>
     );
 };

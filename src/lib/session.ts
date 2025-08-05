@@ -5,7 +5,7 @@ import { APP_SESSION_TOKEN_NAME } from '@/constant';
 const key = new TextEncoder().encode(process.env.SESSION_SECRET);
 
 type SessionData = {
-    user: { id: string };
+    token: string;
     expires: string;
 };
 export async function signToken(payload: SessionData) {
@@ -29,17 +29,18 @@ export async function getSession() {
     return await verifyToken(session);
 }
 
-export async function setSession(userId: string) {
+export async function setSession(accessToken: string) {
     const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const session: SessionData = {
-        user: { id: userId },
+        token: accessToken,
         expires: expiresInOneDay.toISOString(),
     };
     const encryptedSession = await signToken(session);
     (await cookies()).set(APP_SESSION_TOKEN_NAME, encryptedSession, {
         expires: expiresInOneDay,
         httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
+        sameSite: 'strict',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
     });
 }

@@ -1,17 +1,16 @@
 'use server';
 
 import { APP_SESSION_TOKEN_NAME } from '@/constant';
-import { validatedAction } from '@/lib/dal';
 import directusClient from '@/lib/directus';
 import { setSession } from '@/lib/session';
-import { readMe } from '@directus/sdk';
+import { validatedAction } from '@/utils/validate-action';
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { redirect, RedirectType } from 'next/navigation';
 import z from 'zod';
 
 const loginSchema = z.object({
-    email: z.email().min(3).max(255),
-    password: z.string().min(8).max(100),
+    email: z.email(),
+    password: z.string().min(1, { message: 'Password is required' }),
 });
 
 export const login = validatedAction(loginSchema, async (formData) => {
@@ -21,21 +20,22 @@ export const login = validatedAction(loginSchema, async (formData) => {
         return { error: 'All fields are required', status: 400 };
     }
 
-    debugger;
-    const response = await directusClient.login({ email, password });
-
-    if (!response.access_token) {
-        return {
-            error: 'Invalid email or password. Please try again.',
-            email,
-            password,
-        };
+    try {
+        const response = await directusClient.login({ email, password });
+        if (!response.access_token) {
+            return {
+                error: 'Invalid email or password. Please try again.',
+                email,
+                password,
+            };
+        }
+        await setSession(response.access_token);
+    } catch (error) {
+        console.error(error);
+        throw new Error('Use can not login. Please contact admin');
     }
 
-    const user = await directusClient.request(readMe());
-    await setSession(user.id);
-
-    redirect('/dashboard');
+    redirect('/dashboard', RedirectType.replace);
 });
 
 export async function signUp() {
@@ -44,4 +44,5 @@ export async function signUp() {
 
 export async function logOut() {
     (await cookies()).delete(APP_SESSION_TOKEN_NAME);
+    redirect('/auth/login', RedirectType.replace);
 }

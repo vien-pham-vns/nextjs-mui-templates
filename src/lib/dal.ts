@@ -1,33 +1,29 @@
 import 'server-only';
 
 import directusClient from './directus';
-import { readMe } from '@directus/sdk';
+import { DirectusUser, readMe } from '@directus/sdk';
 import { APP_SESSION_TOKEN_NAME } from '@/constant';
 import { cookies } from 'next/headers';
 import { verifyToken } from './session';
-import { User } from '@/app/models/user';
-import z from 'zod';
 
 /**
- * Always use getMeWithToken() to protect pages and user data.
+ * Always use getUser() to protect pages and user data.
  * Never trust cookie exists inside header. It isn't guaranteed to revalidate the Auth token.
- * It's safe to trust getMeWithToken() because it sends a request to the Directus Auth server every time to revalidate the Auth token.
+ * It's safe to trust getUser() because it sends a request to the Directus Auth server every time to revalidate the Auth token.
  *
  * Docs: https://nextjs.org/blog/security-nextjs-server-components-actions
  *
  * TODO: improve with decrypt and encrypt session cookie with Jose
  */
-type DirectusUser = Record<string, any> & Partial<User>;
-
 export async function getUser() {
     const sessionCookies = (await cookies()).get(APP_SESSION_TOKEN_NAME);
-
     if (!sessionCookies || !sessionCookies.value) {
         return null;
     }
 
     const sessionData = await verifyToken(sessionCookies.value);
-    if (!sessionData || !sessionData.user || typeof sessionData.user.id !== 'string') {
+
+    if (!sessionData.token || typeof sessionData.token !== 'string') {
         return null;
     }
 
@@ -36,13 +32,13 @@ export async function getUser() {
     }
 
     try {
-        // directusClient.setToken(token);
-        const user: DirectusUser = await directusClient.request(readMe());
+        directusClient.setToken(sessionData.token);
+        const user = await directusClient.request(readMe());
         if (!user?.id) {
             return null;
         }
 
-        return user;
+        return user as DirectusUser;
     } catch {
         // if ((error as any).response && (error as any).response.status === 401) {
         //     // redirect('/auth/login?token=EXPIRED');
@@ -64,49 +60,4 @@ export async function getSessionCookie(): Promise<string | null> {
             resolve(cookieData);
         }, 1000),
     );
-}
-
-export type ActionState = {
-    error?: string;
-    success?: string;
-    [key: string]: any; // This allows for additional properties
-};
-
-type ValidatedActionFunction<S extends z.ZodType<any, any>, T> = (data: z.infer<S>, formData: FormData) => Promise<T>;
-
-export function validatedAction<S extends z.ZodType<any, any>, T>(schema: S, action: ValidatedActionFunction<S, T>) {
-    return async (prevState: ActionState, formData: FormData) => {
-        const result = schema.safeParse(Object.fromEntries(formData));
-        if (!result.success) {
-            return { error: result.error?.message };
-        }
-
-        return action(result.data, formData);
-    };
-}
-
-type ValidatedActionWithUserFunction<S extends z.ZodType<any, any>, T> = (
-    data: z.infer<S>,
-    formData: FormData,
-    user: DirectusUser,
-) => Promise<T>;
-
-export function validatedActionWithUser<S extends z.ZodType<any, any>, T>(
-    schema: S,
-    action: ValidatedActionWithUserFunction<S, T>,
-) {
-    return async (prevState: ActionState, formData: FormData) => {
-        const user = await getUser();
-        if (!user) {
-            // redirect('/auth/login');
-            throw new Error('User is not authenticated');
-        }
-
-        const result = schema.safeParse(Object.fromEntries(formData));
-        if (!result.success) {
-            return { error: result.error.message };
-        }
-
-        return action(result.data, formData, user);
-    };
 }

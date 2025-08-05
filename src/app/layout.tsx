@@ -4,7 +4,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import theme from '@/theme';
-import ModeSwitch from '@/components/ModeSwitch';
+import ThemSwitch from '@/components/theme-switch';
 import './globals.css';
 
 interface RootLayoutProps {
@@ -20,7 +20,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                     <ThemeProvider theme={theme}>
                         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
                         <CssBaseline />
-                        <ModeSwitch />
+                        <ThemSwitch />
                         {children}
                     </ThemeProvider>
                 </AppRouterCacheProvider>

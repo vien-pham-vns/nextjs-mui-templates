@@ -6,10 +6,12 @@ import { Noto_Sans } from 'next/font/google';
 declare module '@mui/material/styles' {
     interface Palette {
         tertiary: Palette['primary'];
+        error: Palette['error'];
     }
 
     interface PaletteOptions {
         tertiary?: PaletteOptions['primary'];
+        error?: PaletteOptions['error'];
     }
 }
 
@@ -40,6 +42,9 @@ const theme = createTheme({
                     dark: '#e64a19',
                     contrastText: '#ffffff',
                 },
+                error: {
+                    main: '#b2102f',
+                },
             },
         },
         dark: {
@@ -57,6 +62,9 @@ const theme = createTheme({
                     light: '#ffab91',
                     dark: '#f4511e',
                     contrastText: '#000000',
+                },
+                error: {
+                    main: '#ff1744',
                 },
             },
         },
