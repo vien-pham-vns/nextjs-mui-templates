@@ -44,5 +44,5 @@ export async function signUp() {
 
 export async function logOut() {
     (await cookies()).delete(APP_SESSION_TOKEN_NAME);
-    redirect('/auth/login', RedirectType.replace);
+    redirect('/', RedirectType.replace);
 }
