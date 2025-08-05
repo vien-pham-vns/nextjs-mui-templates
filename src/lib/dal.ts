@@ -12,8 +12,6 @@ import { verifyToken } from './session';
  * It's safe to trust getUser() because it sends a request to the Directus Auth server every time to revalidate the Auth token.
  *
  * Docs: https://nextjs.org/blog/security-nextjs-server-components-actions
- *
- * TODO: improve with decrypt and encrypt session cookie with Jose
  */
 export async function getUser() {
     const sessionCookies = (await cookies()).get(APP_SESSION_TOKEN_NAME);
